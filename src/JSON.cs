@@ -21,7 +21,48 @@ namespace JSON
                     throw new Exception("Object is not closed @JSON.parse");
                 res.type = Types.Object;
 
-                var elements = json.Substring(1, json.Length - 2).Split(',');
+                var clearjson = json.Substring(1, json.Length - 2);
+
+                int a = 0, o = 0, l = 0;
+                bool s = false;
+                for (int i = 0; i < clearjson.Length; i++)
+                {
+                    if (clearjson[i] == '[')
+                        a++;
+                    else if (clearjson[i] == ']')
+                        a--;
+                    else if (clearjson[i] == '{')
+                        o++;
+                    else if (clearjson[i] == '}')
+                        o--;
+
+                    if (clearjson[i] == '"')
+                    {
+                        int b = 0;
+                        while (clearjson[i - b - 1] == '\\')
+                        {
+                            b++;
+                        }
+
+                        if (b % 2 == 0)
+                        {
+                            if (s)
+                            {
+                                s = false;
+                            }
+                            else
+                            {
+                                s = true;
+                            }
+                        }
+                    }
+
+                    if (s && a == 0 && o == 0 && clearjson[i] == ',')
+                    {
+
+                    }
+                }
+
                 foreach (var element in elements)
                 {
                     var hashmap = element.Split(':');
