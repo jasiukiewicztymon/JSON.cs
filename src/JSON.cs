@@ -1,3 +1,8 @@
+/* JSON library
+ * License: MIT
+ * Creator: github@jasiukiewicztymon
+ */
+
 namespace JSON
 {
     internal class Parser
@@ -7,18 +12,44 @@ namespace JSON
             json = json.Trim();
 
             Dictionary<string, JSON> props = new Dictionary<string, JSON>();
-            Types type = new Types();
             JSON  res  = new JSON(); 
 
             // reading object
             if (json[0] == '{')
             {
+                if (json[json.Length - 1] != '}')
+                    throw new Exception("Object is not closed @JSON.parse");
                 res.type = Types.Object;
+
+                var elements = json.Substring(1, json.Length - 2).Split(',');
+                foreach (var element in elements)
+                {
+                    var hashmap = element.Split(':');
+                    if (hashmap.Length != 2)
+                        throw new Exception("Wrong object key, value assign @JSON.parse");
+
+                    hashmap[0] = hashmap[0].Trim();
+                    hashmap[1] = hashmap[1].Trim();
+
+                    if (hashmap[0][0] == '"' && hashmap[0][hashmap[0].Length - 1] == '"')
+                        props.Add(hashmap[0].Substring(1, hashmap[0].Length - 1), parse(hashmap[1]));
+                    else
+                        throw new Exception("Invalid object key @JSON.parse");
+                }
+                res.props = props;
             }
             // reading array
             else if (json[0] == '[')
             {
+                if (json[json.Length - 1] != ']')
+                    throw new Exception("Array is not closed @JSON.parse");
                 res.type = Types.Array;
+
+                var elements = json.Substring(1, json.Length - 2).Split(','); 
+
+                for (int i = 0; i < elements.Length; i++)
+                    props.Add(i.ToString(), parse(elements[i]));
+                res.props = props;
             }
             // it's a value
             else
@@ -32,8 +63,10 @@ namespace JSON
                 {
                     res.type = Types.Null;
                 }
-                else if (json[0] == '"' && json[json.Length-1] == '"')
+                else if (json[0] == '"')
                 {
+                    if (json[json.Length - 1] != '"')
+                        throw new Exception("Invalid string @JSON.parse");
                     res.type = Types.String;
                     res.strValue = json.Substring(1, json.Length - 2);
                 }
@@ -58,7 +91,7 @@ namespace JSON
                 }
             }
 
-            return new JSON(Types.Object, "test");
+            return res;
         }
     }
     public enum Types { Object /* {,} */, Array /* [,] */, Number /* [0-9]* */, String /* "" */, Null /* null */, Bool /* true|false */ }
@@ -72,8 +105,6 @@ namespace JSON
         public long     nValue;
         public bool     bValue;
 
-        long length;
-
         public Dictionary<string, JSON> props = new Dictionary<string, JSON>();
         public JSON(Types type, string name)
         {
@@ -81,5 +112,24 @@ namespace JSON
             this.name = name;
         }
         public JSON() { }
+
+        public (bool Null, Types Type, string String, double Double, long Long, bool Bool) get()
+        {
+            if (type == Types.Object || type == Types.Array)
+                throw new Exception($"Impossible to get from {type}, a index is needed @JSON.get");
+            return (Types.Null == type, type, strValue, dValue, nValue, bValue);
+        }
+        public JSON get(string key)
+        {
+            if (type != Types.Object)
+                throw new Exception($"Impossible to get with key from {type} @JSON.get");
+            return props[key];
+        }
+        public JSON get(int index)
+        {
+            if (type != Types.Array)
+                throw new Exception($"Impossible to get with index from {type} @JSON.get");
+            return props[index.ToString()];
+        }
     }
 }
