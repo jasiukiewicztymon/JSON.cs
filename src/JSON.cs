@@ -1,16 +1,20 @@
 /* JSON library
  * License: MIT
  * Creator: github@jasiukiewicztymon
+ * v1.0
  */
 
-/* TESTED */
 namespace JSON
 {
     internal class Parser
     {
         public static JSON parse(string json)
         {
-            json = json.Trim();
+            while (json[0] == ' ' || json[0] == '\t' || json[0] == '\n' || json[0] == '\r')
+                json = json.Remove(0, 1);
+            while (json[json.Length - 1] == ' ' || json[json.Length - 1] == '\t' || json[json.Length - 1] == '\n' || json[json.Length - 1] == '\r')
+                json = json.Remove(json.Length - 1, 1);
+
             List<JSON> tree = new List<JSON>();
 
             int i = 0;
@@ -19,15 +23,19 @@ namespace JSON
                 if (tree.Count >= 1 && i < json.Length && json[i] == ',')
                 {
                     i++;
+                    while (i < json.Length && (json[i] == ' ' || json[i] == '\t' || json[i] == '\n' || json[i] == '\r'))
+                        i++;
+                    if (json[i] == '}' || json[i] == ']')
+                        throw new Exception($"@JSON.parse : There is a seperation token but any value has been detected at {i}");
                 }
-                while (i < json.Length && json[i] == ' ')
+                while (i < json.Length && (json[i] == ' ' || json[i] == '\t' || json[i] == '\n' || json[i] == '\r'))
                     i++;
 
                 if (json[i] == '{')
                 {
-                    while (i < json.Length && json[i + 1] == ' ')
-                        i++;
                     i++;
+                    while (i < json.Length && (json[i] == ' ' || json[i] == '\t' || json[i] == '\n' || json[i] == '\r'))
+                        i++;
                     if (json[i] != '"' && json[i] != '}')
                         throw new Exception($"@JSON.parse : Invalid token at {i} in json object key");
 
@@ -35,10 +43,12 @@ namespace JSON
                 }
                 else if (json[i] == '[')
                 {
-                    while (i + 1 < json.Length && json[i + 1] == ' ')
-                        i++;
                     i++;
+                    while (i < json.Length && (json[i] == ' ' || json[i] == '\t' || json[i] == '\n' || json[i] == '\r'))
+                        i++;
 
+                    if (json[i] == ',')
+                        throw new Exception($"@JSON.parse : There is a seperation token but any value has been detected at {i}");
                     tree.Add(new JSON(Types.Array));
                 }
                 else if (json[i] == '}' || json[i] == ']')
@@ -62,9 +72,10 @@ namespace JSON
                         tree[tree.Count - 2].props.Add(tree[tree.Count - 2].name, tree[tree.Count - 1]);
                         tree[tree.Count - 2].name = "";
                         tree.RemoveAt(tree.Count - 1);
-                        while (i + 1 < json.Length && json[i + 1] == ' ')
+                        i++;
+                        while (i < json.Length && (json[i] == ' ' || json[i] == '\t' || json[i] == '\n' || json[i] == '\r'))
                             i++;
-                        if (i + 1 < json.Length && json[i + 1] != ',' && json[i + 1] != '}')
+                        if (i < json.Length && json[i] != ',' && json[i] != '}')
                             throw new Exception($"@JSON.parse : Invalid token at {i}");
                     }
                     else
@@ -73,12 +84,12 @@ namespace JSON
                             throw new Exception($"@JSON.parse : Invalid close token at {i}");
                         tree[tree.Count - 2].props.Add(tree[tree.Count - 2].props.Count.ToString(), tree[tree.Count - 1]);
                         tree.RemoveAt(tree.Count - 1);
-                        while (i + 1 < json.Length && json[i + 1] == ' ')
+                        i++;
+                        while (i < json.Length && (json[i] == ' ' || json[i] == '\t' || json[i] == '\n' || json[i] == '\r'))
                             i++;
-                        if (i + 1 < json.Length && json[i + 1] != ',' && json[i + 1] != ']')
+                        if (i < json.Length && json[i] != ',' && json[i] != ']')
                             throw new Exception($"@JSON.parse : Invalid token at {i}");
                     }
-                    i++;
                 }
                 else if (json[i] == '"')
                 {
@@ -92,7 +103,11 @@ namespace JSON
                         if (json[i] == '"' && dis == false)
                             break;
                         if (json[i] == '\\')
+                        {
+                            if (dis)
+                                value += json[i];
                             dis = !dis;
+                        }
                         else
                             dis = false;
 
@@ -121,44 +136,40 @@ namespace JSON
                                 throw new Exception($"@JSON.parse : Invalid empty key at {i}");
                             tree[tree.Count - 1].name = value;
 
-                            while (i < json.Length && json[i] == ' ')
+                            while (i < json.Length && (json[i] == ' ' || json[i] == '\t' || json[i] == '\n' || json[i] == '\r'))
                                 i++;
                             if (i < json.Length && json[i] != ':')
                                 throw new Exception($"@JSON.parse : Invalid token at {i} while json object assigning");
 
                             i++;
-                            while (i < json.Length && json[i] == ' ')
+                            while (i < json.Length && (json[i] == ' ' || json[i] == '\t' || json[i] == '\n' || json[i] == '\r'))
                                 i++;
                             if (i < json.Length && (json[i] == '}' || json[i] == ',' || json[i] == ']'))
                                 throw new Exception($"@JSON.parse : Invalid object value at {i}");
-                            i--;
                         }
                         else
                         {
                             tree[tree.Count - 1].props.Add(tree[tree.Count - 1].name, new JSON(value, Types.String));
                             tree[tree.Count - 1].name = "";
-                            while (i < json.Length && json[i] == ' ')
+                            while (i < json.Length && (json[i] == ' ' || json[i] == '\t' || json[i] == '\n' || json[i] == '\r'))
                                 i++;
                             if (i < json.Length && json[i] != ',' && json[i] != '}')
                                 throw new Exception($"@JSON.parse : Invalid token at {i}");
-                            i--;
                         }
                     }
                     else
                     {
                         tree[tree.Count - 1].props.Add(tree[tree.Count - 1].props.Count.ToString(), new JSON(value, Types.String));
-                        while (i < json.Length && json[i] == ' ')
+                        while (i < json.Length && (json[i] == ' ' || json[i] == '\t' || json[i] == '\n' || json[i] == '\r'))
                             i++;
                         if (i < json.Length && json[i] != ',' && json[i] != ']')
                             throw new Exception($"@JSON.parse : Invalid token at {i}");
-                        i--;
                     }
-                    i++;
                 }
                 else
                 {
                     string value = "";
-                    while (i < json.Length && json[i] != ' ' && json[i] != '"' && json[i] != ']' && json[i] != '}' && json[i] != ',')
+                    while (i < json.Length && json[i] != ' ' && json[i] != '\t' && json[i] != '\n' && json[i] != '\r' && json[i] != '"' && json[i] != ']' && json[i] != '}' && json[i] != ',')
                     {
                         value += json[i];
                         i++;
@@ -167,7 +178,7 @@ namespace JSON
                     if (value == "")
                         throw new Exception($"@JSON.parse : Invalid value at {i}");
 
-                    while (i < json.Length && json[i] == ' ')
+                    while (i < json.Length && (json[i] == ' ' || json[i] == '\t' || json[i] == '\n' || json[i] == '\r'))
                         i++;
 
                     if (value == "null")
@@ -287,7 +298,7 @@ namespace JSON
                             }
                         }
                     }
-                    if (json[i] != ']' && json[i] !=  '}')
+                    if (json[i] != ']' && json[i] !=  '}' && json[i] != ',')
                         i++;
                 }
             }
@@ -337,6 +348,52 @@ namespace JSON
             if (type != Types.Array)
                 throw new Exception($"Impossible to get with index from {type} @JSON.get");
             return props[index.ToString()];
+        }
+        public override string ToString()
+        {
+            if (type == Types.Array)
+            {
+                List<string> list = new List<string>();
+                foreach (var item in props)
+                {
+                    list.Add(item.Value.ToString());
+                }
+
+                return "[" + String.Join(',', list) + "]";
+            }
+            else if (type == Types.Object)
+            {
+                List<string> list = new List<string>();
+                foreach (var item in props)
+                {
+                    string t = "\"" + item.Key + "\":";
+                    t += item.Value.ToString();
+                    list.Add(t);
+                }
+
+                return "[" + String.Join(',', list) + "]";
+            } 
+            else if (type == Types.String)
+            {
+                return "\""+strValue+"\"";
+            }
+            else if (type == Types.Number)
+            {
+                if (nValue != 0)
+                    return nValue.ToString();
+                else if (dValue != 0)
+                    return dValue.ToString();
+                else
+                    return "0";
+            }
+            else if (type == Types.Bool)
+            {
+                return bValue ? "true" : "false";
+            }
+            else
+            {
+                return "null";
+            }
         }
     }
 }
