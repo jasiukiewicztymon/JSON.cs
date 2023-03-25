@@ -371,7 +371,7 @@ namespace JSON
                     list.Add(t);
                 }
 
-                return "[" + String.Join(',', list) + "]";
+                return "{" + String.Join(',', list) + "}";
             } 
             else if (type == Types.String)
             {
