@@ -1,4 +1,4 @@
-![json cs](https://user-images.githubusercontent.com/73474137/227710737-73e25a04-f09a-4862-828c-38d46a656b5a.svg)
+![json cs](https://user-images.githubusercontent.com/73474137/227767534-b56e792c-9728-4100-87af-bea1aaec3eb1.png)
 
 ## Examples
 
