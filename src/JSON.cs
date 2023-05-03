@@ -346,7 +346,7 @@ namespace JSON
 
         public double get_number()
         {
-            if (type == Types.String) return Convert.ToDouble(strValue);
+            if (type == Types.String) try { double r = Convert.ToDouble(strValue);  return r; } catch { return 0; }
             else if (type == Types.Null) return 0;
             else if (type == Types.Bool) return bValue ? 1 : 0;
             else if (type == Types.Number) return nValue;
