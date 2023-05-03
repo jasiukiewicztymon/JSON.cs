@@ -317,8 +317,7 @@ namespace JSON
         public string name = "";
 
         public string strValue;
-        public double dValue;
-        public long nValue;
+        public double nValue;
         public bool bValue;
 
         public Dictionary<string, JSON> props = new Dictionary<string, JSON>();
@@ -327,16 +326,67 @@ namespace JSON
         public JSON(Types t) { type = t; }
 
         public JSON(string v, Types t) { type = t; strValue = v; }
-        public JSON(double v, Types t) { type = t; dValue = v; }
+        public JSON(double v, Types t) { type = t; nValue = v; }
         public JSON(long v, Types t) { type = t; nValue = v; }
         public JSON(bool v, Types t) { type = t; bValue = v; }
 
-        public (bool Null, Types Type, string String, double Double, long Long, bool Bool) get()
+        public string get_string()
         {
-            if (type == Types.Object || type == Types.Array)
-                throw new Exception($"Impossible to get from {type}, a index is needed @JSON.get");
-            return (Types.Null == type, type, strValue, dValue, nValue, bValue);
+            if (type == Types.String) return strValue;
+            else if (type == Types.Null) return "";
+            else if (type == Types.Bool) return bValue.ToString();
+            else if (type == Types.Number) return nValue.ToString();
+            else return "";
         }
+        public void set(string v)
+        {
+            type = Types.String;
+            strValue = v;
+        }
+
+        public double get_number()
+        {
+            if (type == Types.String) return Convert.ToDouble(strValue);
+            else if (type == Types.Null) return 0;
+            else if (type == Types.Bool) return bValue ? 1 : 0;
+            else if (type == Types.Number) return nValue;
+            else return 0;
+        }
+        public void set(double v)
+        {
+            type = Types.Number;
+            nValue = v;
+        }
+        public void set(long v)
+        {
+            type = Types.Number;
+            nValue = v;
+        }
+
+        public bool get_bool()
+        {
+            if (type == Types.String) return strValue.Length != 0;
+            else if (type == Types.Null) return false;
+            else if (type == Types.Bool) return bValue;
+            else if (type == Types.Number) return nValue != 0;
+            else return false;
+        }
+        public void set(bool v)
+        {
+            type = Types.Bool;
+            bValue = v;
+        }
+
+        public void set()
+        {
+            type = Types.Null;
+        }
+        public bool get()
+        {
+            return Types.Null == type;
+        }
+
+
         public JSON get(string key)
         {
             if (type != Types.Object)
@@ -381,8 +431,8 @@ namespace JSON
             {
                 if (nValue != 0)
                     return nValue.ToString();
-                else if (dValue != 0)
-                    return dValue.ToString();
+                else if (nValue != 0)
+                    return nValue.ToString();
                 else
                     return "0";
             }
