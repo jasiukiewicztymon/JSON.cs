@@ -399,6 +399,22 @@ namespace JSON
                 throw new Exception($"Impossible to get with index from {type} @JSON.get");
             return props[index.ToString()];
         }
+
+        public bool save(string path)
+        {
+            try
+            {
+                if (!File.Exists(path))
+                {
+                    using (StreamWriter sw = File.CreateText(path)) { sw.WriteLine(this.ToString()); }
+                }
+                else
+                {
+                    File.WriteAllText(path, this.ToString());
+                }
+                return true;
+            } catch (Exception e) { return false; }
+        }
         public override string ToString()
         {
             if (type == Types.Array)
